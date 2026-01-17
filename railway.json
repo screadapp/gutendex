@@ -4,8 +4,8 @@
         "builder": "DOCKERFILE"
     },
     "deploy": {
-        "startCommand": "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn gutendex.wsgi --bind 0.0.0.0:$PORT",
-        "healthcheckPath": "/",
+        "startCommand": "python manage.py migrate && gunicorn gutendex.wsgi --bind 0.0.0.0:$PORT",
+        "healthcheckPath": "/health",
         "restartPolicyType": "ON_FAILURE"
     }
 }
