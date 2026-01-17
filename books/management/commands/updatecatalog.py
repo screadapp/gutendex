@@ -30,6 +30,8 @@ LOG_PATH = os.path.join(LOG_DIRECTORY, LOG_FILE_NAME)
 # This gives a set of the names of the subdirectories in the given file path.
 def get_directory_set(path):
     directory_set = set()
+    if not os.path.exists(path):
+        return directory_set
     for directory_item in os.listdir(path):
         item_path = os.path.join(path, directory_item)
         if os.path.isdir(item_path):
@@ -282,13 +284,16 @@ def send_log_email():
 
     ''' + log_text
 
-    send_mail(
-        subject='Catalog retrieval',
-        message=email_text,
-        html_message=email_html,
-        from_email=settings.EMAIL_HOST_ADDRESS,
-        recipient_list=settings.ADMIN_EMAILS
-    )
+    try:
+        send_mail(
+            subject='Catalog retrieval',
+            message=email_text,
+            html_message=email_html,
+            from_email=settings.EMAIL_HOST_ADDRESS,
+            recipient_list=settings.ADMIN_EMAILS
+        )
+    except Exception as e:
+        log('  Warning: Could not send email notification:', str(e))
 
 
 class Command(BaseCommand):
@@ -312,12 +317,22 @@ class Command(BaseCommand):
 
             log('  Decompressing catalog...')
             if not os.path.exists(DOWNLOAD_PATH):
-                os.makedirs(DOWNLOAD_PATH)
-            with open(os.devnull, 'w') as null:
-                call(
-                    ['tar', 'fjvx', DOWNLOAD_PATH, '-C', TEMP_PATH],
-                    stdout=null,
-                    stderr=null
+                raise CommandError(
+                    'Download failed - catalog file not found at ' + DOWNLOAD_PATH
+                )
+            # Extract the tar file
+            extract_result = call(
+                ['tar', '-xjf', DOWNLOAD_PATH, '-C', TEMP_PATH],
+            )
+            if extract_result != 0:
+                raise CommandError(
+                    'Tar extraction failed with exit code ' + str(extract_result)
+                )
+            
+            # Verify extraction was successful
+            if not os.path.exists(MOVE_SOURCE_PATH):
+                raise CommandError(
+                    'Extraction failed - cache/epub directory not found at ' + MOVE_SOURCE_PATH
                 )
 
             log('  Detecting stale directories...')
