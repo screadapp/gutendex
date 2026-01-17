@@ -157,19 +157,19 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 
 # User-uploaded files
-MEDIA_ROOT = env('MEDIA_ROOT')
+MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
 MEDIA_URL = '/media/'
 
 
 # Users for error reporting
-ADMIN_EMAILS = env('ADMIN_EMAILS')
-ADMIN_NAMES = env('ADMIN_NAMES')
+ADMIN_EMAILS = env('ADMIN_EMAILS', default=[])
+ADMIN_NAMES = env('ADMIN_NAMES', default=[])
 ADMIN_COUNT = len(ADMIN_EMAILS)
 ADMINS = [
     (ADMIN_NAMES[i], ADMIN_EMAILS[i]) for i in range(ADMIN_COUNT)
 ]
-MANAGER_EMAILS = env('MANAGER_EMAILS')
-MANAGER_NAMES = env('MANAGER_NAMES')
+MANAGER_EMAILS = env('MANAGER_EMAILS', default=[])
+MANAGER_NAMES = env('MANAGER_NAMES', default=[])
 MANAGER_COUNT = len(MANAGER_EMAILS)
 MANAGERS = [
     (MANAGER_NAMES[i], MANAGER_EMAILS[i]) for i in range(MANAGER_COUNT)
@@ -177,10 +177,10 @@ MANAGERS = [
 
 
 # Email
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_HOST_ADDRESS = env('EMAIL_HOST_ADDRESS')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_HOST_ADDRESS = env('EMAIL_HOST_ADDRESS', default='webmaster@localhost')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='password')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='webmaster')
 
 
 # Directory paths for catalog files and updater
