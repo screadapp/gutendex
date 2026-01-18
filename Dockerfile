@@ -23,7 +23,7 @@ RUN SECRET_KEY=dummy \
     python manage.py collectstatic --noinput
 
 # Expose port
-EXPOSE 8000
+EXPOSE 8080
 
 # Run migrations and start server
-CMD python manage.py migrate && gunicorn gutendex.wsgi --bind 0.0.0.0:${PORT:-8000}
+CMD python manage.py migrate && gunicorn gutendex.wsgi --bind 0.0.0.0:${PORT:-8080}
