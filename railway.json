@@ -4,7 +4,6 @@
         "builder": "DOCKERFILE"
     },
     "deploy": {
-        "startCommand": "gunicorn gutendex.wsgi:application --bind 0.0.0.0:8080 --workers 2 --log-level info",
         "healthcheckPath": "/health",
         "restartPolicyType": "ON_FAILURE"
     }
