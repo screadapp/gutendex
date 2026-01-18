@@ -25,5 +25,5 @@ RUN SECRET_KEY=dummy \
 # Expose port
 EXPOSE 8080
 
-# Run migrations and start server
-CMD python manage.py migrate && gunicorn gutendex.wsgi --bind 0.0.0.0:${PORT:-8080}
+# Run migrations and start server with verbose logging
+CMD python manage.py migrate && gunicorn gutendex.wsgi --bind 0.0.0.0:8080 --log-level info --access-logfile - --error-logfile -
