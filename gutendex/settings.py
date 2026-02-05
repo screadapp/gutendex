@@ -116,6 +116,32 @@ else:
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
+# Cache configuration - use Redis if available, otherwise memory cache
+REDIS_URL = env('REDIS_URL', default=None)
+
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+            'KEY_PREFIX': 'gutendex',
+            'TIMEOUT': 3600,  # 1 hour default cache timeout
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    }
+
+# Cache timeout for book queries (1 hour)
+BOOK_CACHE_TIMEOUT = 3600
+
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
 

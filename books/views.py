@@ -1,9 +1,21 @@
 from django.db.models import Q
+from django.core.cache import cache
+from django.conf import settings
+import hashlib
 
 from rest_framework import exceptions as drf_exceptions, viewsets
+from rest_framework.response import Response
 
 from .models import *
 from .serializers import *
+
+
+def get_cache_key(request):
+    """Generate a unique cache key based on query parameters."""
+    params = sorted(request.GET.items())
+    param_string = '&'.join(f'{k}={v}' for k, v in params)
+    hash_key = hashlib.md5(param_string.encode()).hexdigest()
+    return f'books_list_{hash_key}'
 
 
 class BookViewSet(viewsets.ModelViewSet):
@@ -15,6 +27,42 @@ class BookViewSet(viewsets.ModelViewSet):
     queryset = queryset.exclude(title__isnull=True)
 
     serializer_class = BookSerializer
+
+    def list(self, request, *args, **kwargs):
+        """Override list to add caching."""
+        cache_key = get_cache_key(request)
+        
+        # Try to get from cache
+        cached_response = cache.get(cache_key)
+        if cached_response is not None:
+            return Response(cached_response)
+        
+        # Get fresh data
+        response = super().list(request, *args, **kwargs)
+        
+        # Cache the response data for 1 hour
+        cache_timeout = getattr(settings, 'BOOK_CACHE_TIMEOUT', 3600)
+        cache.set(cache_key, response.data, cache_timeout)
+        
+        return response
+
+    def retrieve(self, request, *args, **kwargs):
+        """Override retrieve to add caching for individual books."""
+        book_id = kwargs.get('gutenberg_id')
+        cache_key = f'book_{book_id}'
+        
+        # Try to get from cache
+        cached_response = cache.get(cache_key)
+        if cached_response is not None:
+            return Response(cached_response)
+        
+        # Get fresh data
+        response = super().retrieve(request, *args, **kwargs)
+        
+        # Cache for 24 hours since individual books rarely change
+        cache.set(cache_key, response.data, 86400)
+        
+        return response
 
     def get_queryset(self):
         queryset = self.queryset
